@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tailwindcss-colors.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Ping QR code</title>
+
+    <script src="{{ url_for('static', filename='create_qr_code_ping.js') }}"></script>
+</head>
+
+<body>
+    <strong>Description: {{ qr_code.description }}</strong>
+    <form action="{{ url_for('qr.create_qr_code_ping', qr_code_id=qr_code.id) }}" method="POST">
+        <input type="hidden" name="lat" id="lat_input">
+        <input type="hidden" name="lon" , id="lon_input">
+        <strong>Lat: <span id="lat_text">loading latitude</span></strong>
+        <strong>Lon: <span id="lon_text">loading longitude</span></strong>
+        <button type="submit">Confirm ping?</button>
+    </form>
+</body>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='tailwindcss-colors.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>View QR code</title>
+</head>
+
+<body>
+    QR Code: <br>
+    <img src="{{ qr_code.svg_url() }}">
+
+    <br>
+    Pings for this QR Code: <br>
+    {% for qr_code_ping in qr_code.get_qr_code_pings() %}
+    <a href="{{ url_for('qr.view_qr_code_ping', qr_code_ping_id=qr_code_ping.id) }}">Ping at {{ qr_code_ping.lat }}, {{ qr_code_ping.lon }}, at
+        {{
+        qr_code_ping.created_at }}</a>
+    <br>
+    {% endfor %}
+</body>
