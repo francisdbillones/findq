@@ -25,6 +25,13 @@ CREATE TABLE qr_code_ping (
     qr_code_id INTEGER NOT NULL,
     lat REAL NOT NULL,
     lon REAL NOT NULL,
+    description TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (qr_code_id) REFERENCES qr_code (id)
+);
+
+CREATE TABLE qr_code_ping_image (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    qr_code_ping_id INTEGER NOT NULL,
+    FOREIGN KEY (qr_code_ping_id) REFERENCES qr_code_ping (id)
 );

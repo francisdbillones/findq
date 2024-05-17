@@ -1,24 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends 'layout.html' %}
+{% block title %} Ping QR code {% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tailwindcss-colors.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>Ping QR code</title>
-
-    <script src="{{ url_for('static', filename='create_qr_code_ping.js') }}"></script>
-</head>
-
-<body>
-    <strong>Description: {{ qr_code.description }}</strong>
-    <form action="{{ url_for('qr.create_qr_code_ping', qr_code_id=qr_code.id) }}" method="POST">
+{% block body %}
+<div class="card" style="margin-left: 1em; margin-right: 1em; padding: 1em;">
+    <form enctype="multipart/form-data" action="{{ url_for('qr.create_qr_code_ping', qr_code_id=qr_code.id) }}"
+        method="POST">
+        <ul class="list-group list-group-horizontal">
+            <li id="lat_text" class="list-group-item list-group-item-warning">Latitude: </li>
+            <li id="lon_text" class="list-group-item list-group-item-warning">Longitude: </li>
+        </ul>
         <input type="hidden" name="lat" id="lat_input">
-        <input type="hidden" name="lon" , id="lon_input">
-        <strong>Lat: <span id="lat_text">loading latitude</span></strong>
-        <strong>Lon: <span id="lon_text">loading longitude</span></strong>
-        <button type="submit">Confirm ping?</button>
+        <input type="hidden" name="lon" id="lon_input">
+        <div class="mb-3">
+            <label for="qr_code_title" class="form-label">Message to owner</label>
+            <input type="text" class="form-control" name="description" id="qr_code_title"
+                aria-describedby="qr_code_title_help">
+            <div id="qr_code_title_help" class="form-text">Write a short message to the owner.</div>
+        </div>
+        <div class="mb-3">
+            <label for="file_multiple" class="form-label">Upload images</label>
+            <input class="form-control" name="images" type="file" id="file_multiple" multiple>
+        </div>
+        <button id="submit_button" type="submit" class="btn btn-primary" disabled>Notify owner</button>
     </form>
-</body>
+</div>
+<script src="{{ url_for('static', filename='create_qr_code_ping.js') }}"></script>
+{% endblock %}

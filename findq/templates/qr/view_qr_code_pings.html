@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block title %} View QR code ping {% endblock %}
+
+{% block body %}
+{% for qr_code_ping in qr_code_pings %}
+<div class="card" style="margin-right: 1em; margin-left: 1em;">
+    <iframe src="{{ qr_code_ping.gmaps_embed_link }}"></iframe>
+    <div class="card-body">
+        <h5 class="card-title">{{ qr_code_ping.title }}</h5>
+        <p class="card-text">{{ qr_code_ping.description }}</p>
+        <a href="{{ url_for('qr.view_qr_code_ping', qr_code_ping_id=qr_code_ping.id) }}"
+            class="btn btn-primary">Open</a>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -53,33 +53,32 @@ class QRCode:
 
         return (QRCodePing.from_id(id["id"]) for id in ping_ids)
 
-    def svg_path(self):
+    def png_path(self):
         return os.path.join(
-            current_app.root_path, "static", "qr_images", f"{self.id}.svg"
+            current_app.root_path, "static", "qr_images", f"{self.id}.png"
         )
 
-    def svg_url(self):
-        return url_for("static", filename=f"qr_images/{self.id}.svg")
+    def png_url(self):
+        return url_for("static", filename=f"qr_images/{self.id}.png")
 
     def _generate_svg_if_not_exists(self):
-        if os.path.exists(self.svg_path()):
+        from qrcode.image.styledpil import StyledPilImage
+
+        if os.path.exists(self.png_path()):
             return
 
         qr = qrcode.QRCode(
-            version=1, error_correction=qrcode.ERROR_CORRECT_H, image_factory=SvgImage
+            version=1,
+            error_correction=qrcode.ERROR_CORRECT_H,
         )
 
         data = f"findq.francisdb.net/p/{self.id}"
         qr.add_data(data)
 
-        img = qr.make_image()
-        svg_bytes = img.to_string()
+        logo_path = os.path.join(current_app.root_path, "static", "logo.png")
 
-        with open(
-            self.svg_path(),
-            "wb",
-        ) as f:
-            f.write(svg_bytes)
+        img = qr.make_image(image_factory=StyledPilImage, embeded_image_path=logo_path)
+        img.save(self.png_path())
 
     @classmethod
     def from_id(cls, id: int):
@@ -102,16 +101,32 @@ class QRCode:
 
 class QRCodePing:
     def __init__(
-        self, id: int, qr_code_id: int, lat: float, lon: float, created_at: str
+        self,
+        id: int,
+        qr_code_id: int,
+        lat: float,
+        lon: float,
+        description: str,
+        created_at: str,
     ):
         self.id = id
         self.qr_code_id = qr_code_id
         self.lat = lat
         self.lon = lon
+        self.description = description
         self.created_at = datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
 
     def get_qr_code(self):
         return QRCode.from_id(self.qr_code_id)
+
+    def get_images(self):
+        return (
+            QRCodePingImage.from_id(id["id"])
+            for id in get_db().execute(
+                "SELECT * FROM qr_code_ping_image WHERE qr_code_ping_id = ?",
+                (self.id,),
+            )
+        )
 
     @classmethod
     def from_id(cls, id: int):
@@ -126,22 +141,69 @@ class QRCodePing:
             qr_code_id=ping["qr_code_id"],
             lat=ping["lat"],
             lon=ping["lon"],
+            description=ping["description"],
             created_at=ping["created_at"],
         )
 
     @staticmethod
-    def create(qr_code_id: int, lat: float, lon: float):
+    def create(qr_code_id: int, lat: float, lon: float, description: str, images: list):
         db = get_db()
 
-        db.execute(
-            "INSERT INTO qr_code_ping (qr_code_id, lat, lon) VALUES (?, ?, ?)",
-            (qr_code_id, lat, lon),
+        cur = db.execute(
+            "INSERT INTO qr_code_ping (qr_code_id, lat, lon, description) VALUES (?, ?, ?, ?)",
+            (qr_code_id, lat, lon, description),
         )
+
+        qr_code_ping_id = cur.lastrowid
+
+        for image in images:
+            QRCodePingImage.create(qr_code_ping_id)
+            image.save(
+                os.path.join(
+                    current_app.root_path,
+                    "static",
+                    "qr_ping_images",
+                    f"{qr_code_ping_id}.{image.filename.split('.')[-1]}",
+                )
+            )
 
         db.commit()
 
     def __repr__(self):
         return f"QRCodePing(id={self.id}, qr_code_id={self.qr_code_id}, lat={self.lat}, lon={self.lon}, created_at={self.created_at})"
+
+
+class QRCodePingImage:
+    def __init__(self, id: int, qr_code_ping_id: int):
+        self.id = id
+        self.qr_code_ping_id = qr_code_ping_id
+
+    @classmethod
+    def from_id(cls, id: int):
+        image = (
+            get_db()
+            .execute("SELECT * FROM qr_code_ping_image WHERE id = ?", (id,))
+            .fetchone()
+        )
+
+        return cls(
+            id=image["id"],
+            qr_code_ping_id=image["qr_code_ping_id"],
+        )
+
+    @staticmethod
+    def create(qr_code_ping_id: int):
+        db = get_db()
+
+        db.execute(
+            "INSERT INTO qr_code_ping_image (qr_code_ping_id) VALUES (?)",
+            (qr_code_ping_id,),
+        )
+
+        db.commit()
+
+    def __repr__(self):
+        return f"QRCodePingImage(id={self.id}, qr_code_ping_id={self.qr_code_ping_id})"
 
 
 def create_db():

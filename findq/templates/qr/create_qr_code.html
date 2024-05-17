@@ -1,21 +1,17 @@
-<!DOCTYPE html>
+{% extends 'layout.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.2.0/fonts/remixicon.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='tailwindcss-colors.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <title>Create QR</title>
-</head>
-
-<body>
-    <strong>Create QR</strong>
+{% block title %} Create QR {% endblock %}
+{% block body %}
+<div class="card" style="margin-right: 1em; margin-left: 1em; padding: 1em;">
     <form action="{{ url_for('qr.create_qr_code') }}" method="POST">
-        <textarea name="description" placeholder="Enter text"></textarea>
-        <button type="submit">Create QR</button>
+        <div class="mb-3">
+            <label for="qr_code_title" class="form-label">Description</label>
+            <input type="text" class="form-control" name="description" id="qr_code_title"
+                aria-describedby="qr_code_title_help">
+            <div id="qr_code_title_help" class="form-text">Short, descriptive summary of the object you're making a QR
+                for.</div>
+        </div>
+        <button type="submit" class="btn btn-primary">Create QR</button>
     </form>
-</body>
+</div>
+{% endblock %}
